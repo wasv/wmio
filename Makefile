@@ -5,10 +5,8 @@ LD = gcc
 OBJDUMP = objdump
 OBJCOPY = objcopy
 
-OBJS        += build/cbuf.o
-OBJS        += build/usb-io.o
-OBJS        += build/periph.o
-OBJS        += build/main.o
+OBJS         = $(patsubst src/%.c,build/%.o,$(wildcard src/*.c))
+OBJS        += $(patsubst src/periph/%.c,build/periph/%.o,$(wildcard src/periph/*.c))
 DEPS         = $(OBJS:%.o=%.d)
 
 DEVICE = stm32f103c8
@@ -23,7 +21,7 @@ DEFS		+= -I./src
 FP_FLAGS	?= -msoft-float
 ARCH_FLAGS  = -mthumb -mcpu=cortex-m3 $(FP_FLAGS) -mfix-cortex-m3-ldrd
 
-CFLAGS      += -ggdb3 -std=c99
+CFLAGS      += -ggdb3 -std=c99 -Wall -Wpedantic
 CXXFLAGS    += -ggdb3
 CPPFLAGS	+= -MD $(DEFS) $(ARCH_FLAGS)
 
@@ -56,17 +54,15 @@ build/%.elf: $(OBJS) %.ld
 	printf "  LD      $(*).elf\n"
 	$(PREFIX)$(LD) $(LDFLAGS) -T$(*).ld $(OBJS) $(LDLIBS) -o $@
 
-build/%.o: src/%.c | libopencm3 build/.keep
+build/%.o: src/%.c | libopencm3
+	@mkdir -p $(@D)
 	printf "  CC      $(*).c\n"
 	$(PREFIX)$(CC) $(CFLAGS) $(CPPFLAGS) -o $@ -c $<
 
-build/%.o: src/%.cpp | libopencm3 build/.keep
+build/%.o: src/%.cpp | libopencm3
+	@mkdir -p $(@D)
 	printf "  CXX     $(*).cpp\n"
 	$(PREFIX)$(CXX) $(CXXFLAGS) $(CPPFLAGS) -o $@ -c $<
-
-build/.keep:
-	mkdir -p build
-	touch build/.keep
 
 flash: build/firmware.bin
 	echo "Uploading to board..."

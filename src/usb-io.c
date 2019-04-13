@@ -4,7 +4,6 @@
 
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
-#include <libopencm3/usb/usbd.h>
 
 void usb_wmio_set_config(usbd_device *usbd_dev, uint16_t wValue)
 {
